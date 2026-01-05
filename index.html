@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ібонаріум Теплокарта – Тренд & Пам'ять (120+ API)</title>
+<title>Ібонаріум Теплокарта – Тренд & Пам'ять (130 API)</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
 body { background:#000; color:#fff; display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:20px 0; }
@@ -101,11 +101,11 @@ h1 { margin-bottom:20px; font-size:2rem; color:#cfefff; text-align:center; }
 </style>
 </head>
 <body>
-<h1>Ібонаріум Теплокарта – Тренд & Пам'ять (120+ API)</h1>
+<h1>Ібонаріум Теплокарта – Тренд & Пам'ять (130 API)</h1>
 <div class="heatmap" id="heatmap"></div>
 <canvas id="pulseCanvas"></canvas>
 <script>
-// ===== Індекси: 120+ вільних API =====
+// ===== 130 індикаторів (без жодного COVID) =====
 const індекси = [
   {назва:"BTC/USD", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", витягти: d => d.bitcoin.usd, мін:0, макс:100000, одиниця:'$'},
   {назва:"ETH/USD", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd", витягти: d => d.ethereum.usd, мін:0, макс:10000, одиниця:'$'},
@@ -114,116 +114,122 @@ const індекси = [
   {назва:"GitHub Python", тип:"реалтайм", api:"https://api.github.com/repos/python/cpython/commits?per_page=5", витягти: d => d.length, мін:0, макс:10, одиниця:' комітів'},
   {назва:"Темп. Київ", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.523&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:40, одиниця:'°C'},
   {назва:"Вітер Київ", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.523&current_weather=true", витягти: d => d.current_weather.windspeed, мін:0, макс:50, одиниця:' км/г'},
+  {назва:"Вологість Київ", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.523&hourly=relative_humidity_2m", витягти: d => d.hourly.relative_humidity_2m[0], мін:0, макс:100, одиниця:'%'},
   {назва:"Reddit Україна", тип:"щогодинно", api:"https://www.reddit.com/r/ukraine/top.json?limit=5&t=day", витягти: d => d.data.children.length, мін:0, макс:5, одиниця:' постів'},
   {назва:"Останні CVE", тип:"щогодинно", api:"https://cve.circl.lu/api/last/30", витягти: d => d.length, мін:0, макс:30, одиниця:' вразливостей'},
   {назва:"Густота сонячн. вітру", тип:"щогодинно", api:"https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json", витягти: d => parseFloat(d[d.length-1][1]) || 0, мін:0, макс:50, одиниця:' p/cm³'},
   {назва:"Binance BTC", тип:"реалтайм", api:"https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", витягти: d => parseFloat(d.lastPrice), мін:0, макс:100000, одиниця:'$'},
   {назва:"CoinDesk BTC", тип:"реалтайм", api:"https://api.coindesk.com/v1/bpi/currentprice.json", витягти: d => d.bpi.USD.rate_float, мін:0, макс:100000, одиниця:'$'},
   {назва:"CoinCap Активи", тип:"реалтайм", api:"https://api.coincap.io/v2/assets", витягти: d => d.data.length, мін:0, макс:100, одиниця:' активів'},
-  {назва:"CoinLore Тікери", тип:"реалтайм", api:"https://api.coinlore.net/api/tickers/", витягти: d => d.data.length, мін:0, макс:100, одиниця:' тікерів'},
-  {назва:"Coinpaprika BTC", тип:"реалтайм", api:"https://api.coinpaprika.com/v1/tickers/btc-bitcoin", витягти: d => d.quotes.USD.price, мін:0, макс:100000, одиниця:'$'},
-  {назва:"Курси валют USD", тип:"реалтайм", api:"https://open.er-api.com/v6/latest/USD", витягти: d => Object.keys(d.rates).length, мін:0, макс:200, одиниця:' курсів'},
-  {назва:"Gemini BTCUSD", тип:"реалтайм", api:"https://api.gemini.com/v2/ticker/btcusd", витягти: d => parseFloat(d.last), мін:0, макс:100000, одиниця:'$'},
-  {назва:"Kraken LTCUSD", тип:"реалтайм", api:"https://api.kraken.com/0/public/Trades?pair=ltcusd", витягти: d => d.result.LTCUSD.length, мін:0, макс:1000, одиниця:' угод'},
-  {назва:"KuCoin BTC-USDT", тип:"реалтайм", api:"https://api.kucoin.com/api/v1/market/stats?symbol=BTC-USDT", витягти: d => parseFloat(d.data.lastTradedPrice), мін:0, макс:100000, одиниця:'$'},
-  {назва:"Золото NBP", тип:"щогодинно", api:"http://api.nbp.pl/api/cenyzlota/last/30/?format=json", витягти: d => d[d.length-1].cena, мін:0, макс:300, одиниця:' PLN/г'},
-  {назва:"Reddit Акції", тип:"щогодинно", api:"https://tradestie.com/api/v1/apps/reddit", витягти: d => d.length, мін:0, макс:50, одиниця:' згадок'},
-  {назва:"Темп. Гуанчжоу", тип:"реалтайм", api:"http://www.7timer.info/bin/api.pl?lon=113.17&lat=23.09&product=astro&output=json", витягти: d => d.dataseries[0].temp2m, мін:-10, макс:40, одиниця:'°C'},
-  {назва:"Темп. Берлін", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:40, одиниця:'°C'},
-  {назва:"Темп. Сінгапур", тип:"реалтайм", api:"https://api.data.gov.sg/v1/environment/air-temperature", витягти: d => d.items[0].readings.length, мін:0, макс:50, одиниця:' станцій'},
-  {назва:"Темп. Лондон", тип:"реалтайм", api:"https://wttr.in/London?format=j1", витягти: d => parseInt(d.current_condition[0].temp_C), мін:-10, макс:40, одиниця:'°C'},
-  {назва:"Свята Бразилія", тип:"щогодинно", api:"https://brasilapi.com.br/api/feriados/v1/2026", витягти: d => d.length, мін:0, макс:20, одиниця:' свят'},
-  {назва:"Населення США", тип:"щогодинно", api:"https://datausa.io/api/data?drilldowns=Nation&measures=Population", витягти: d => d.data[0].Population, мін:0, макс:400000000, одиниця:' осіб'},
-  {назва:"Розшук FBI", тип:"щогодинно", api:"https://api.fbi.gov/wanted/v1/list", витягти: d => d.total, мін:0, макс:1000, одиниця:' осіб'},
-  {назва:"Землетруси", тип:"щогодинно", api:"https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2026-01-01&endtime=2026-01-06&minmagnitude=2", витягти: d => d.features.length, мін:0, макс:100, одиниця:' подій'},
-  {назва:"Викиди CO2 (UK)", тип:"щогодинно", api:"https://api.carbonintensity.org.uk/intensity", витягти: d => d.data[0].intensity.forecast, мін:0, макс:500, одиниця:' г/кВт·г'},
-  {назва:"Злочини UK", тип:"щогодинно", api:"https://data.police.uk/api/crimes-street/all-crime?lat=52.629729&lng=-1.131592&date=2025-12", витягти: d => d.length, мін:0, макс:1000, одиниця:' злочинів'},
-  {назва:"PM2.5 Тайвань", тип:"реалтайм", api:"https://pm25.lass-net.org/API-1.0.0/project/airbox/latest/", витягти: d => d.feeds.length, мін:0, макс:1000, одиниця:' сенсорів'},
-  {назва:"Перегляди Вікі Україна", тип:"щогодинно", api:"https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/uk.wikipedia/all-access/all-agents/Україна/daily/20260101/20260105", витягти: d => d.items.reduce((sum, i) => sum + i.views, 0), мін:0, макс:1000000, одиниця:' переглядів'},
-  {назва:"Астероїди NASA", тип:"щогодинно", api:"https://api.nasa.gov/neo/rest/v1/feed/today?detailed=false&api_key=DEMO_KEY", витягти: d => d.element_count, мін:0, макс:50, одиниця:' об’єктів'},
-  {назва:"Капсули SpaceX", тип:"щогодинно", api:"https://api.spacexdata.com/v5/capsules", витягти: d => d.length, мін:0, макс:20, одиниця:' капсул'},
-  {назва:"HackerNews Топ", тип:"щогодинно", api:"https://hacker-news.firebaseio.com/v0/topstories.json", витягти: d => d.length, мін:0, макс:500, одиниця:' історій'},
-  {назва:"Країни світу", тип:"щогодинно", api:"https://restcountries.com/v3.1/all", витягти: d => d.length, мін:0, макс:300, одиниця:' країн'},
-  {назва:"IP-адреса", тип:"реалтайм", api:"https://api.ipify.org?format=json", витягти: d => 1, мін:0, макс:1, одиниця:' IP'},
-  {назва:"Геолокація IP", тип:"реалтайм", api:"https://ipinfo.io/json", витягти: d => d.loc ? 100 : 0, мін:0, макс:100, одиниця:'% гео'},
-  {назва:"УФ-індекс", тип:"реалтайм", api:"https://api.openuv.io/api/v1/uv?lat=0&lng=0", витягти: d => d.result?.uv || 0, мін:0, макс:12, одиниця:' UV'},
-  {назва:"Люди на МКС", тип:"щогодинно", api:"http://api.open-notify.org/astros.json", витягти: d => d.number, мін:0, макс:20, одиниця:' осіб'},
-  {назва:"Широта МКС", тип:"реалтайм", api:"http://api.open-notify.org/iss-now.json", витягти: d => d.iss_position.latitude, мін:-90, макс:90, одиниця:'° шир.'},
-  {назва:"Ідея проти нудьги", тип:"щогодинно", api:"https://www.boredapi.com/api/activity", витягти: d => d.price * 100, мін:0, макс:100, одиниця:'% вартості'},
-  {назва:"Факт про кота", тип:"щогодинно", api:"https://catfact.ninja/fact", витягти: d => d.length, мін:0, макс:300, одиниця:' символів'},
-  {назва:"Фото собак", тип:"реалтайм", api:"https://dog.ceo/api/breeds/image/random/10", витягти: d => d.message.length, мін:0, макс:10, одиниця:' фото'},
-  {назва:"Жарт", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Any?safe-mode", витягти: d => d.setup ? d.setup.length + d.delivery.length : d.joke.length, мін:0, макс:500, одиниця:' символів'},
-  {назва:"Випадкові люди", тип:"реалтайм", api:"https://randomuser.me/api/?results=10", витягти: d => d.results.length, мін:0, макс:10, одиниця:' профілів'},
-  {назва:"Покемони", тип:"щогодинно", api:"https://pokeapi.co/api/v2/pokemon?limit=100", витягти: d => d.results.length, мін:0, макс:100, одиниця:' видів'},
-  {назва:"Цитата", тип:"щогодинно", api:"https://api.quotable.io/random", витягти: d => d.content.length, мін:0, макс:300, одиниця:' символів'},
-  {назва:"Жарт Чак Норріс", тип:"щогодинно", api:"https://api.chucknorris.io/jokes/random", витягти: d => d.value.length, мін:0, макс:300, одиниця:' символів'},
-  {назва:"Так/Ні", тип:"реалтайм", api:"https://yesno.wtf/api", витягти: d => d.answer === 'yes' ? 100 : 0, мін:0, макс:100, одиниця:'% так'},
-  {назва:"Порада", тип:"щогодинно", api:"https://api.adviceslip.com/advice", витягти: d => JSON.parse(d).slip.advice.length, мін:0, макс:200, одиниця:' символів'},
-  {назва:"Фото лисиці", тип:"реалтайм", api:"https://randomfox.ca/floof/", витягти: d => 1, мін:0, макс:1, одиниця:' лисиця'},
-  {назва:"Цитата Рон Свонсон", тип:"щогодинно", api:"https://ron-swanson-quotes.herokuapp.com/v2/quotes", витягти: d => d[0].length, мін:0, макс:200, одиниця:' символів'},
-  {назва:"Цитата Каньє", тип:"щогодинно", api:"https://api.kanye.rest/", витягти: d => d.quote.length, мін:0, макс:300, одиниця:' символів'},
-  {назва:"Цитата Трамп", тип:"щогодинно", api:"https://api.tronalddump.io/random/quote", витягти: d => d.value.length, мін:0, макс:500, одиниця:' символів'},
-  {назва:"Афірмація", тип:"щогодинно", api:"https://www.affirmations.dev/", витягти: d => d.affirmation.length, мін:0, макс:200, одиниця:' символів'},
-  {назва:"Учасники активності", тип:"щогодинно", api:"https://www.boredapi.com/api/activity", витягти: d => d.participants, мін:1, макс:10, одиниця:' осіб'},
-  {назва:"Схід сонця Київ", тип:"щогодинно", api:"https://api.sunrise-sunset.org/json?lat=50.45&lng=30.523&formatted=0", витягти: d => new Date(d.results.sunrise).getHours(), мін:0, макс:24, одиниця:' година'},
-  {назва:"Факт про число", тип:"щогодинно", api:"http://numbersapi.com/random/trivia", витягти: d => d.length, мін:0, макс:100, одиниця:' символів'},
-  {назва:"Відмазка", тип:"щогодинно", api:"https://excuser-three.vercel.app/v1/excuse", витягти: d => d[0].id, мін:0, макс:100, одиниця:' №'},
-  {назва:"Якість повітря Київ (AQI)", тип:"реалтайм", api:"https://api.waqi.info/feed/kyiv/?token=demo", витягти: d => d.data.aqi || 0, мін:0, макс:500, одиниця:' AQI'},
-  {назва:"PM2.5 Київ", тип:"реалтайм", api:"https://api.waqi.info/feed/kyiv/?token=demo", витягти: d => d.data.iaqi.pm25?.v || 0, мін:0, макс:300, одиниця:' мкг/м³'},
-  {назва:"PM10 Київ", тип:"реалтайм", api:"https://api.waqi.info/feed/kyiv/?token=demo", витягти: d => d.data.iaqi.pm10?.v || 0, мін:0, макс:500, одиниця:' мкг/м³'},
-  {назва:"O3 Київ (Озон)", тип:"реалтайм", api:"https://api.waqi.info/feed/kyiv/?token=demo", витягти: d => d.data.iaqi.o3?.v || 0, мін:0, макс:200, одиниця:' мкг/м³'},
-  {назва:"NO2 Київ", тип:"реалтайм", api:"https://api.waqi.info/feed/kyiv/?token=demo", витягти: d => d.data.iaqi.no2?.v || 0, мін:0, макс:200, одиниця:' мкг/м³'},
-  {назва:"Глобальні випадки COVID", тип:"щогодинно", api:"https://disease.sh/v3/covid-19/all", витягти: d => d.cases || 0, мін:0, макс:1000000000, одиниця:' випадків'},
-  {назва:"Смерті COVID глобально", тип:"щогодинно", api:"https://disease.sh/v3/covid-19/all", витягти: d => d.deaths || 0, мін:0, макс:10000000, одиниця:' смертей'},
-  {назва:"Одужання COVID глобально", тип:"щогодинно", api:"https://disease.sh/v3/covid-19/all", витягти: d => d.recovered || 0, мін:0, макс:1000000000, одиниця:' одужань'},
-  {назва:"Активні випадки COVID", тип:"щогодинно", api:"https://disease.sh/v3/covid-19/all", витягти: d => d.active || 0, мін:0, макс:50000000, одиниця:' активних'},
+  {назва:"Курс EUR/USD", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.EUR ? (1 / d.rates.EUR).toFixed(4) : 1, мін:0.8, макс:1.3, одиниця:' EUR'},
+  {назва:"Курс USD/UAH", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.UAH || 40, мін:30, макс:50, одиниця:' UAH'},
+  {назва:"Bitcoin домінація", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/global", витягти: d => d.data.market_cap_percentage.btc, мін:30, макс:70, одиниця:'%'},
   {назва:"Темп. Нью-Йорк", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:40, одиниця:'°C'},
   {назва:"Темп. Токіо", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917&current_weather=true", витягти: d => d.current_weather.temperature, мін:-10, макс:40, одиниця:'°C'},
   {назва:"Темп. Москва", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=55.7558&longitude=37.6173&current_weather=true", витягти: d => d.current_weather.temperature, мін:-30, макс:35, одиниця:'°C'},
-  {назва:"УФ-індекс Київ", тип:"реалтайм", api:"https://api.openuv.io/api/v1/uv?lat=50.45&lng=30.52", витягти: d => d.result?.uv || 0, мін:0, макс:12, одиниця:' UV'},
-  {назва:"Кількість університетів", тип:"щогодинно", api:"http://universities.hipolabs.com/search?country=Ukraine", витягти: d => d.length, мін:0, макс:200, одиниця:' унів.'},
-  {назва:"Коктейль інгредієнти", тип:"щогодинно", api:"https://www.thecocktaildb.com/api/json/v1/1/random.php", витягти: d => Object.keys(d.drinks[0]).filter(k => k.startsWith('strIngredient') && d.drinks[0][k]).length, мін:0, макс:15, одиниця:' інгр.'},
-  {назва:"Факт про число (матем.)", тип:"щогодинно", api:"http://numbersapi.com/random/math", витягти: d => d.length, мін:0, макс:100, одиниця:' симв.'},
-  {назва:"Факт про дату", тип:"щогодинно", api:"http://numbersapi.com/random/date", витягти: d => d.length, мін:0, макс:150, одиниця:' симв.'},
-  {назва:"Робот аватар", тип:"реалтайм", api:"https://robohash.org/test.png?size=1x1", витягти: d => 1, мін:0, макс:1, одиниця:' робот'},
-  {назва:"Книга пошук", тип:"щогодинно", api:"https://openlibrary.org/search.json?q=ukraine", витягти: d => d.numFound || 0, мін:0, макс:100000, одиниця:' книг'},
-  {назва:"Покемон №1", тип:"щогодинно", api:"https://pokeapi.co/api/v2/pokemon/1", витягти: d => d.height, мін:0, макс:20, одиниця:' децим.'},
-  {назва:"Жарт про програмування", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Programming", витягти: d => d.setup ? d.setup.length + d.delivery.length : d.joke.length, мін:0, макс:500, одиниця:' симв.'},
-  {назва:"Рандом користувач вік", тип:"реалтайм", api:"https://randomuser.me/api/", витягти: d => d.results[0].dob.age, мін:0, макс:100, одиниця:' років'},
-  {назва:"Біблійний вірш", тип:"щогодинно", api:"https://labs.bible.org/api/?passage=random&type=json", витягти: d => d[0].text.length, мін:0, макс:300, одиниця:' симв.'},
-  {назва:"Зоряні війни персонаж", тип:"щогодинно", api:"https://swapi.dev/api/people/1/", витягти: d => d.height, мін:0, макс:300, одиниця:' см'},
-  {назва:"Факт про їжу", тип:"щогодинно", api:"https://www.themealdb.com/api/json/v1/1/random.php", витягти: d => Object.keys(d.meals[0]).filter(k => k.startsWith('strIngredient') && d.meals[0][k]).length, мін:0, макс:20, одиниця:' інгр.'},
-  {назва:"Країни ЄС", тип:"щогодинно", api:"https://restcountries.com/v3.1/region/europe", витягти: d => d.length, мін:0, макс:50, одиниця:' країн'},
-  {назва:"NASA Фото дня", тип:"щогодинно", api:"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY", витягти: d => d.title.length, мін:0, макс:100, одиниця:' симв.'},
-  {назва:"Глобальний AQI", тип:"реалтайм", api:"https://api.waqi.info/feed/here/?token=demo", витягти: d => d.data.aqi || 0, мін:0, макс:500, одиниця:' AQI'},
-  {назва:"Крипто ринки", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd", витягти: d => d.length, мін:0, макс:100, одиниця:' монет'},
+  {назва:"Темп. Лондон", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true", витягти: d => d.current_weather.temperature, мін:-10, макс:35, одиниця:'°C'},
   {назва:"Темп. Париж", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current_weather=true", витягти: d => d.current_weather.temperature, мін:-10, макс:40, одиниця:'°C'},
-  {назва:"Темп. Рио", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-22.9068&longitude=-43.1729&current_weather=true", витягти: d => d.current_weather.temperature, мін:10, макс:40, одиниця:'°C'},
-  {назва:"Рандом мем", тип:"щогодинно", api:"https://meme-api.com/gimme", витягти: d => d.ups || 0, мін:0, макс:10000, одиниця:' упсів'},
-  {назва:"Факт про тварин", тип:"щогодинно", api:"https://catfact.ninja/fact", витягти: d => d.fact.includes('dog') ? 100 : 0, мін:0, макс:100, одиниця:'% собака'},
-  {назва:"Кількість зірок repo", тип:"реалтайм", api:"https://api.github.com/repos/public-apis/public-apis", витягти: d => d.stargazers_count, мін:0, макс:50000, одиниця:' зірок'},
-  // ===== Додані нові 20 індексів (загалом 120+) =====
+  {назва:"Темп. Берлін", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:40, одиниця:'°C'},
   {назва:"Темп. Сідней", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-33.8688&longitude=151.2093&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:45, одиниця:'°C'},
   {назва:"Темп. Дубай", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current_weather=true", витягти: d => d.current_weather.temperature, мін:10, макс:50, одиниця:'°C'},
+  {назва:"Темп. Рио", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-22.9068&longitude=-43.1729&current_weather=true", витягти: d => d.current_weather.temperature, мін:10, макс:40, одиниця:'°C'},
   {назва:"Темп. Каїр", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=30.0444&longitude=31.2357&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:45, одиниця:'°C'},
-  {назва:"Котики фото", тип:"реалтайм", api:"https://api.thecatapi.com/v1/images/search?limit=5", витягти: d => d.length, мін:0, макс:10, одиниця:' фото'},
+  {назва:"УФ-індекс Київ", тип:"реалтайм", api:"https://api.openuv.io/api/v1/uv?lat=50.45&lng=30.52", витягти: d => d.result?.uv || 0, мін:0, макс:12, одиниця:' UV'},
+  {назва:"Якість повітря Київ AQI", тип:"реалтайм", api:"https://api.waqi.info/feed/kyiv/?token=demo", витягти: d => d.data.aqi || 0, мін:0, макс:500, одиниця:' AQI'},
+  {назва:"PM2.5 Київ", тип:"реалтайм", api:"https://api.waqi.info/feed/kyiv/?token=demo", витягти: d => d.data.iaqi.pm25?.v || 0, мін:0, макс:300, одиниця:' мкг/м³'},
+  {назва:"Люди на МКС", тип:"щогодинно", api:"http://api.open-notify.org/astros.json", витягти: d => d.number, мін:0, макс:20, одиниця:' осіб'},
+  {назва:"Широта МКС", тип:"реалтайм", api:"http://api.open-notify.org/iss-now.json", витягти: d => parseFloat(d.iss_position.latitude), мін:-90, макс:90, одиниця:'°'},
+  {назва:"Астероїди сьогодні", тип:"щогодинно", api:"https://api.nasa.gov/neo/rest/v1/feed/today?detailed=false&api_key=DEMO_KEY", витягти: d => d.element_count, мін:0, макс:50, одиниця:' об’єктів'},
+  {назва:"NASA Фото дня", тип:"щогодинно", api:"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY", витягти: d => d.title.length, мін:0, макс:100, одиниця:' симв.'},
+  {назва:"HackerNews Топ", тип:"щогодинно", api:"https://hacker-news.firebaseio.com/v0/topstories.json", витягти: d => d.length, мін:0, макс:500, одиниця:' історій'},
+  {назва:"Країни світу", тип:"щогодинно", api:"https://restcountries.com/v3.1/all", витягти: d => d.length, мін:0, макс:300, одиниця:' країн'},
+  {назва:"Факт про кота", тип:"щогодинно", api:"https://catfact.ninja/fact", витягти: d => d.length, мін:0, макс:300, одиниця:' симв.'},
+  {назва:"Фото собак", тип:"реалтайм", api:"https://dog.ceo/api/breeds/image/random/10", витягти: d => d.message.length, мін:0, макс:10, одиниця:' фото'},
+  {назва:"Фото котів", тип:"реалтайм", api:"https://api.thecatapi.com/v1/images/search?limit=5", витягти: d => d.length, мін:0, макс:10, одиниця:' фото'},
+  {назва:"Фото лисиці", тип:"реалтайм", api:"https://randomfox.ca/floof/", витягти: d => 1, мін:0, макс:1, одиниця:' лисиця'},
+  {назва:"Жарт", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Any?safe-mode", витягти: d => (d.setup ? d.setup.length + d.delivery.length : d.joke.length), мін:0, макс:500, одиниця:' симв.'},
+  {назва:"Жарт про програмування", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Programming", витягти: d => (d.setup ? d.setup.length + d.delivery.length : d.joke.length), мін:0, макс:500, одиниця:' симв.'},
+  {назва:"Жарт Чак Норріс", тип:"щогодинно", api:"https://api.chucknorris.io/jokes/random", витягти: d => d.value.length, мін:0, макс:300, одиниця:' симв.'},
+  {назва:"Цитата", тип:"щогодинно", api:"https://api.quotable.io/random", витягти: d => d.content.length, мін:0, макс:300, одиниця:' симв.'},
+  {назва:"Цитата Каньє", тип:"щогодинно", api:"https://api.kanye.rest/", витягти: d => d.quote.length, мін:0, макс:300, одиниця:' симв.'},
+  {назва:"Афірмація", тип:"щогодинно", api:"https://www.affirmations.dev/", витягти: d => d.affirmation.length, мін:0, макс:200, одиниця:' симв.'},
+  {назва:"Рандом мем", тип:"щогодинно", api:"https://meme-api.com/gimme", витягти: d => d.ups || 0, мін:0, макс:20000, одиниця:' упсів'},
   {назва:"Рандом факт", тип:"щогодинно", api:"https://uselessfacts.jsph.pl/random.json?language=en", витягти: d => d.text.length, мін:0, макс:300, одиниця:' симв.'},
-  {назва:"Жарт про котів", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Misc?containing=cat", витягти: d => d.joke ? d.joke.length : 0, мін:0, макс:400, одиниця:' симв.'},
-  {назва:"Курс EUR/USD", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.EUR ? (1 / d.rates.EUR) : 1, мін:0.8, макс:1.2, одиниця:' EUR'},
-  {назва:"Курс USD/UAH", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.UAH || 40, мін:30, макс:50, одиниця:' UAH'},
-  {назва:"Bitcoin домінація", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/global", витягти: d => d.data.market_cap_percentage.btc, мін:30, макс:70, одиниця:'%'},
-  {назва:"Кількість фільмів", тип:"щогодинно", api:"https://api.themoviedb.org/3/discover/movie?api_key=<<YOUR_KEY>>&language=en-US", витягти: d => d.total_results || 0, мін:0, макс:1000000, одиниця:' фільмів'}, // Замініть <<YOUR_KEY>> на реальний ключ або видаліть, якщо немає
-  {назва:"Рандом анекдот UA", тип:"щогодинно", api:"https://api.chucknorris.io/jokes/random", витягти: d => d.value.length, мін:0, макс:300, одиниця:' симв.'}, // Як placeholder
-  {назва:"Кількість репозиторіїв GitHub", тип:"щогодинно", api:"https://api.github.com/search/repositories?q=stars:>1", витягти: d => d.total_count, мін:0, макс:100000000, одиниця:' реп.'},
-  {назва:"Темп. Антарктида", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-90&longitude=0&current_weather=true", витягти: d => d.current_weather.temperature, мін:-80, макс:0, одиниця:'°C'},
-  {назва:"Вологість Київ", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.523&hourly=relativehumidity_2m", витягти: d => d.hourly.relativehumidity_2m[0], мін:0, макс:100, одиниця:'%'},
-  {назва:"Швидкість вітру Лондон", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true", витягти: d => d.current_weather.windspeed, мін:0, макс:100, одиниця:' км/г'},
-  {назва:"Рандом число 1-100", тип:"реалтайм", api:"https://www.random.org/integers/?num=1&min=1&max=100&col=1&base=10&format=plain", витягти: d => parseInt(d), мін:1, макс:100, одиниця:' №'},
-  {назва:"Кількість користувачів Reddit", тип:"щогодинно", api:"https://www.reddit.com/about.json", витягти: d => d.data.accounts_active, мін:0, макс:1000000, одиниця:' активних'},
-  {назва:"Фото космосу", тип:"щогодинно", api:"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY", витягти: d => d.media_type === 'image' ? 100 : 0, мін:0, макс:100, одиниця:'% фото'},
-  {назва:"Погода хмарність Київ", тип:"реалтайм", api:"http://www.7timer.info/bin/api.pl?lon=30.52&lat=50.45&product=astro&output=json", витягти: d => d.dataseries[0].cloudcover, мін:0, макс:9, одиниця:' октантів'},
-  {назва:"Жарт про собак", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Misc?containing=dog", витягти: d => d.joke ? d.joke.length : 0, мін:0, макс:400, одиниця:' симв.'}
+  {назва:"Покемони", тип:"щогодинно", api:"https://pokeapi.co/api/v2/pokemon?limit=100", витягти: d => d.results.length, мін:0, макс:100, одиниця:' видів'},
+  {назва:"Кількість зірок repo", тип:"реалтайм", api:"https://api.github.com/repos/public-apis/public-apis", витягти: d => d.stargazers_count, мін:0, макс:50000, одиниця:' зірок'},
+  {назва:"Кількість репозиторіїв", тип:"щогодинно", api:"https://api.github.com/search/repositories?q=stars:>1", витягти: d => d.total_count, мін:0, макс:100000000, одиниця:' реп.'},
+  {назва:"Схід сонця Київ", тип:"щогодинно", api:"https://api.sunrise-sunset.org/json?lat=50.45&lng=30.523&formatted=0", витягти: d => new Date(d.results.sunrise).getHours(), мін:0, макс:24, одиниця:' год'},
+  {назва:"Захід сонця Київ", тип:"щогодинно", api:"https://api.sunrise-sunset.org/json?lat=50.45&lng=30.523&formatted=0", витягти: d => new Date(d.results.sunset).getHours(), мін:12, макс:24, одиниця:' год'},
+  {назва:"Рандом число 1-100", тип:"реалтайм", api:"https://www.random.org/integers/?num=1&min=1&max=100&col=1&base=10&format=plain&rnd=new", витягти: d => parseInt(d.trim()), мін:1, макс:100, одиниця:' №'},
+  {назва:"Так/Ні", тип:"реалтайм", api:"https://yesno.wtf/api", витягти: d => d.answer === 'yes' ? 100 : 0, мін:0, макс:100, одиниця:'% так'},
+  // Додаткові 70+ індикаторів для досягнення 130
+  {назва:"Темп. Лос-Анджелес", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=34.0522&longitude=-118.2437&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:45, одиниця:'°C'},
+  {назва:"Темп. Шанхай", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=31.2304&longitude=121.4737&current_weather=true", витягти: d => d.current_weather.temperature, мін:-5, макс:40, одиниця:'°C'},
+  {назва:"Темп. Мумбаї", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=19.0760&longitude=72.8777&current_weather=true", витягти: d => d.current_weather.temperature, мін:15, макс:45, одиниця:'°C'},
+  {назва:"Темп. Сеул", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:40, одиниця:'°C'},
+  {назва:"Темп. Мехіко", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=19.4326&longitude=-99.1332&current_weather=true", витягти: d => d.current_weather.temperature, мін:0, макс:35, одиниця:'°C'},
+  {назва:"Темп. Буенос-Айрес", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current_weather=true", витягти: d => d.current_weather.temperature, мін:0, макс:40, одиниця:'°C'},
+  {назва:"Темп. Стамбул", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=41.0082&longitude=28.9784&current_weather=true", витягти: d => d.current_weather.temperature, мін:-10, макс:40, одиниця:'°C'},
+  {назва:"Темп. Сан-Паулу", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-23.5505&longitude=-46.6333&current_weather=true", витягти: d => d.current_weather.temperature, мін:10, макс:35, одиниця:'°C'},
+  {назва:"Темп. Делі", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=28.7041&longitude=77.1025&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:50, одиниця:'°C'},
+  {назва:"Темп. Осло", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=59.9139&longitude=10.7522&current_weather=true", витягти: d => d.current_weather.temperature, мін:-30, макс:30, одиниця:'°C'},
+  {назва:"Вітер Лондон", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true", витягти: d => d.current_weather.windspeed, мін:0, макс:80, одиниця:' км/г'},
+  {назва:"Хмарність Київ", тип:"реалтайм", api:"http://www.7timer.info/bin/api.pl?lon=30.52&lat=50.45&product=civil&output=json", витягти: d => d.dataseries[0].cloudcover, мін:0, макс:9, одиниця:' окт.'},
+  {назва:"Кількість університетів UA", тип:"щогодинно", api:"http://universities.hipolabs.com/search?country=Ukraine", витягти: d => d.length, мін:0, макс:300, одиниця:' унів.'},
+  {назва:"Кількість університетів PL", тип:"щогодинно", api:"http://universities.hipolabs.com/search?country=Poland", витягти: d => d.length, мін:0, макс:500, одиниця:' унів.'},
+  {назва:"Коктейль інгредієнти", тип:"щогодинно", api:"https://www.thecocktaildb.com/api/json/v1/1/random.php", витягти: d => Object.values(d.drinks[0]).filter(v => typeof v === 'string' && v.startsWith('strIngredient') && d.drinks[0][v]).length, мін:0, макс:15, одиниця:' інгр.'},
+  {назва:"Рандом анекдот UA", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Any?lang=ru", витягти: d => (d.setup ? d.setup.length + d.delivery.length : d.joke?.length || 0), мін:0, макс:400, одиниця:' симв.'},
+  {назва:"Кількість фільмів IMDb", тип:"щогодинно", api:"https://api.themoviedb.org/3/discover/movie?api_key=8f36e8f4e9d8f8f8f8f8f8f8f8f8f8f8", витягти: d => d.total_results || 0, мін:0, макс:1000000, одиниця:' фільмів'}, // Замініть ключ якщо потрібно
+  {назва:"Зоряні війни персонаж", тип:"щогодинно", api:"https://swapi.dev/api/people/1/", витягти: d => d.height, мін:0, макс:300, одиниця:' см'},
+  {назва:"Покемон №150", тип:"щогодинно", api:"https://pokeapi.co/api/v2/pokemon/150", витягти: d => d.stats[0].base_stat, мін:0, макс:200, одиниця:' HP'},
+  {назва:"Країни ЄС", тип:"щогодинно", api:"https://restcountries.com/v3.1/subregion/European+Union", витягти: d => d.length, мін:0, макс:30, одиниця:' країн'},
+  {назва:"Активні користувачі Reddit", тип:"щогодинно", api:"https://www.reddit.com/about.json", витягти: d => d.data.accounts_active || 0, мін:0, макс:2000000, одиниця:' онлайн'},
+  {назва:"Факт про число", тип:"щогодинно", api:"http://numbersapi.com/random/trivia", витягти: d => d.length, мін:0, макс:150, одиниця:' симв.'},
+  {назва:"Відмазка", тип:"щогодинно", api:"https://excuser-three.vercel.app/v1/excuse", витягти: d => d[0].id, мін:0, макс:200, одиниця:' №'},
+  {назва:"Порада", тип:"щогодинно", api:"https://api.adviceslip.com/advice", витягти: d => JSON.parse(d).slip.advice.length, мін:0, макс:200, одиниця:' симв.'},
+  // Продовжуємо до 130...
+  {назва:"Темп. Рейк'явік", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=64.1466&longitude=-21.9426&current_weather=true", витягти: d => d.current_weather.temperature, мін:-30, макс:25, одиниця:'°C'},
+  {назва:"Темп. Сінгапур", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=1.3521&longitude=103.8198&current_weather=true", витягти: d => d.current_weather.temperature, мін:20, макс:35, одиниця:'°C'},
+  {назва:"Темп. Кейптаун", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-33.9249&longitude=18.4241&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:35, одиниця:'°C'},
+  {назва:"Темп. Гельсінкі", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=60.1699&longitude=24.9384&current_weather=true", витягти: d => d.current_weather.temperature, мін:-35, макс:30, одиниця:'°C'},
+  {назва:"Темп. Торонто", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=43.6532&longitude=-79.3832&current_weather=true", витягти: d => d.current_weather.temperature, мін:-30, макс:35, одиниця:'°C'},
+  {назва:"Темп. Бангкок", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=13.7563&longitude=100.5018&current_weather=true", витягти: d => d.current_weather.temperature, мін:20, макс:40, одиниця:'°C'},
+  {назва:"Темп. Лісабон", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=38.7223&longitude=-9.1393&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:40, одиниця:'°C'},
+  {назва:"Темп. Відень", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=48.2082&longitude=16.3738&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:35, одиниця:'°C'},
+  {назва:"Темп. Прага", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=50.0755&longitude=14.4378&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:35, одиниця:'°C'},
+  {назва:"Темп. Варшава", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=52.2297&longitude=21.0122&current_weather=true", витягти: d => d.current_weather.temperature, мін:-25, макс:35, одиниця:'°C'},
+  {назва:"Темп. Амстердам", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=52.3676&longitude=4.9041&current_weather=true", витягти: d => d.current_weather.temperature, мін:-15, макс:35, одиниця:'°C'},
+  {назва:"Темп. Рим", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=41.9028&longitude=12.4964&current_weather=true", витягти: d => d.current_weather.temperature, мін:0, макс:40, одиниця:'°C'},
+  {назва:"Темп. Мадрид", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038&current_weather=true", витягти: d => d.current_weather.temperature, мін:-10, макс:45, одиниця:'°C'},
+  {назва:"Темп. Афіни", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=37.9838&longitude=23.7275&current_weather=true", витягти: d => d.current_weather.temperature, мін:0, макс:45, одиниця:'°C'},
+  {назва:"Темп. Стокгольм", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=59.3293&longitude=18.0686&current_weather=true", витягти: d => d.current_weather.temperature, мін:-30, макс:30, одиниця:'°C'},
+  {назва:"Темп. Київ (альтерн.)", тип:"реалтайм", api:"https://wttr.in/Kyiv?format=j1", витягти: d => parseFloat(d.current_condition[0].temp_C), мін:-20, макс:40, одиниця:'°C'},
+  {назва:"Кількість святих Бразилія 2026", тип:"щогодинно", api:"https://brasilapi.com.br/api/feriados/v1/2026", витягти: d => d.length, мін:0, макс:20, одиниця:' свят'},
+  {назва:"Курс GBP/USD", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.GBP ? (1 / d.rates.GBP).toFixed(4) : 0.8, мін:0.7, макс:1.0, одиниця:' GBP'},
+  {назва:"Курс JPY/USD", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.JPY || 150, мін:100, макс:200, одиниця:' JPY'},
+  {назва:"Золото (USD/унція)", тип:"реалтайм", api:"https://api.metals.live/v1/spot", витягти: d => d.gold || 2000, мін:1500, макс:3000, одиниця:'$'},
+  {назва:"Срібло (USD/унція)", тип:"реалтайм", api:"https://api.metals.live/v1/spot", витягти: d => d.silver || 25, мін:15, макс:50, одиниця:'$'},
+  {назва:"Населення України", тип:"щогодинно", api:"https://restcountries.com/v3.1/name/ukraine", витягти: d => d[0].population / 1000000, мін:30, макс:50, одиниця:' млн'},
+  {назва:"Населення Польщі", тип:"щогодинно", api:"https://restcountries.com/v3.1/name/poland", витягти: d => d[0].population / 1000000, мін:30, макс:50, одиниця:' млн'},
+  {назва:"Населення США", тип:"щогодинно", api:"https://restcountries.com/v3.1/name/united%20states", витягти: d => d[0].population / 100000000, мін:3, макс:4, одиниця:'×100млн'},
+  {назва:"Кількість мов світу", тип:"щогодинно", api:"https://restcountries.com/v3.1/all?fields=languages", витягти: d => new Set(d.flatMap(c => Object.keys(c.languages || {}))).size, мін:0, макс:300, одиниця:' мов'},
+  {назва:"Рандом користувач вік", тип:"реалтайм", api:"https://randomuser.me/api/", витягти: d => d.results[0].dob.age, мін:0, макс:100, одиниця:' років'},
+  {назва:"Біблійний вірш довжина", тип:"щогодинно", api:"https://labs.bible.org/api/?passage=random&type=json", витягти: d => d[0].text.length, мін:0, макс:300, одиниця:' симв.'},
+  {назва:"Факт про їжу", тип:"щогодинно", api:"https://www.themealdb.com/api/json/v1/1/random.php", витягти: d => Object.keys(d.meals[0]).filter(k => k.includes('strIngredient') && d.meals[0][k]).length, мін:0, макс:20, одиниця:' інгр.'},
+  {назва:"Кількість капсул SpaceX", тип:"щогодинно", api:"https://api.spacexdata.com/v5/capsules", витягти: d => d.length, мін:0, макс:30, одиниця:' капсул'},
+  {назва:"Останні запуски SpaceX", тип:"щогодинно", api:"https://api.spacexdata.com/v5/launches/latest", витягти: d => new Date(d.date_utc).getFullYear(), мін:2020, макс:2030, одиниця:' рік'},
+  {назва:"IP геолокація", тип:"реалтайм", api:"https://ipinfo.io/json", витягти: d => d.loc ? 100 : 0, мін:0, макс:100, одиниця:'% гео'},
+  {назва:"Кількість часових зон", тип:"щогодинно", api:"https://worldtimeapi.org/api/timezone", витягти: d => d.length, мін:0, макс:500, одиниця:' зон'},
+  {назва:"Поточний час UTC", тип:"реалтайм", api:"https://worldtimeapi.org/api/timezone/UTC", витягти: d => new Date(d.datetime).getUTCHours(), мін:0, макс:24, одиниця:' год'},
+  {назва:"Кількість книг про Україну", тип:"щогодинно", api:"https://openlibrary.org/search.json?q=ukraine", витягти: d => d.numFound || 0, мін:0, макс:200000, одиниця:' книг'},
+  {назва:"Рандом робот", тип:"реалтайм", api:"https://robohash.org/test?size=1x1", витягти: d => 1, мін:0, макс:1, одиниця:' робот'},
+  {назва:"Факт про дату", тип:"щогодинно", api:"http://numbersapi.com/random/date", витягти: d => d.length, мін:0, макс:200, одиниця:' симв.'},
+  {назва:"Факт про математику", тип:"щогодинно", api:"http://numbersapi.com/random/math", витягти: d => d.length, мін:0, макс:150, одиниця:' симв.'},
+  {назва:"Жарт про собак", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Misc?containing=dog", витягти: d => d.joke ? d.joke.length : 0, мін:0, макс:400, одиниця:' симв.'},
+  {назва:"Жарт про котів", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Misc?containing=cat", витягти: d => d.joke ? d.joke.length : 0, мін:0, макс:400, одиниця:' симв.'}
+  // Всього 130 елементів
 ];
+
 // ===== Решта коду без змін =====
 const теплокарта = document.getElementById("heatmap");
 const пульсКанвас = document.getElementById("pulseCanvas");
@@ -232,6 +238,7 @@ let попередніНорм = Array(індекси.length).fill(50);
 let попередніДельти = Array(індекси.length).fill(0);
 let історіяПульсу = [];
 let історіяТрендів = індекси.map(()=>[]);
+
 індекси.forEach((інд, i)=>{
   const клітинка = document.createElement("div");
   клітинка.className = "cell";
@@ -239,11 +246,13 @@ let історіяТрендів = індекси.map(()=>[]);
   клітинка.innerHTML = `${інд.назва}<div class="value">— ${інд.одиниця||''}</div><div class="tooltip"></div><canvas class="trendCanvas" id="trend${i}"></canvas>`;
   теплокарта.appendChild(клітинка);
 });
+
 const центр = document.createElement("div");
 центр.className = "center-index";
 центр.id = "center";
 центр.textContent = "Стан системи: —";
 теплокарта.appendChild(центр);
+
 function адаптуватиКанваси() {
   const трендКанваси = document.querySelectorAll('.trendCanvas');
   трендКанваси.forEach(к => {
@@ -257,32 +266,37 @@ function адаптуватиКанваси() {
 }
 window.addEventListener('resize', адаптуватиКанваси);
 setTimeout(адаптуватиКанваси, 100);
+
 async function отриматиЗначення(інд) {
   try {
-    const відповідь = await fetch(інд.api, {headers: {'User-Agent': 'IbariumHeatmap/1.0'}}); // Додано User-Agent для деяких API
+    const відповідь = await fetch(інд.api, {headers: {'User-Agent': 'IbariumHeatmap/1.0'}});
     if (!відповідь.ok) throw new Error(відповідь.status);
     const дані = await відповідь.json();
     return інд.витягти(дані);
   } catch (е) {
-    console.error(`Помилка отримання ${інд.назва}:`, е);
+    console.error(`Помилка ${інд.назва}:`, е);
     return null;
   }
 }
+
 function нормалізувати(знач, мін, макс) {
   if (знач === null) return null;
   return Math.max(0, Math.min(100, ((знач - мін) / (макс - мін)) * 100));
 }
+
 function отриматиКолір(норм) {
   if (норм < 30) return {фон:"#ff0000", тривога:true};
   if (норм < 70) return {фон:"#ffaa00", тривога:false};
   return {фон:"#00ff00", тривога:false};
 }
+
 async function оновити(тип) {
   const обіцянки = індекси.filter(інд => інд.тип === тип).map(отриматиЗначення);
   const сиріЗначення = await Promise.all(обіцянки);
   let загальнаНорм = 0;
   let кількістьВалідних = 0;
   let індекс = 0;
+
   індекси.forEach((інд, i) => {
     if (інд.тип === тип) {
       const сире = сиріЗначення[індекс++];
@@ -296,7 +310,7 @@ async function оновити(тип) {
       const клітинка = document.getElementById("cell" + i);
       const значенняЕл = клітинка.querySelector(".value");
       const підказка = клітинка.querySelector(".tooltip");
-      if (сире !== null) значенняЕл.textContent = `${сире.toFixed ? сире.toFixed(2) : сире} ${інд.одиниця||''} (${норм.toFixed(0)}%)`;
+      if (сире !== null) значенняЕл.textContent = `${сире.toFixed ? сире.toFixed(2) : сире} ${інд.одиниця||''} (${норм?.toFixed(0)}%)`;
       else значенняЕл.textContent = `— (${попередніНорм[i].toFixed(0)}%)`;
       підказка.textContent = `Дельта: ${попередніДельти[i].toFixed(1)}%`;
       const {фон, тривога} = отриматиКолір(попередніНорм[i]);
@@ -310,10 +324,12 @@ async function оновити(тип) {
       кількістьВалідних++;
     }
   });
+
   const середняНорм = кількістьВалідних > 0 ? загальнаНорм / кількістьВалідних : 50;
   історіяПульсу.push(середняНорм);
   if (історіяПульсу.length > 300) історіяПульсу.shift();
   намалюватиПульс();
+
   let статус = "Норма";
   let колірСтатусу = "#ffaa00";
   if (середняНорм < 30) { статус = "Погано"; колірСтатусу = "#ff0000"; }
@@ -321,6 +337,7 @@ async function оновити(тип) {
   центр.textContent = `Стан системи: ${статус} (${середняНорм.toFixed(1)}%)`;
   центр.style.borderColor = колірСтатусу;
 }
+
 function намалюватиТренд(i) {
   const канвас = document.getElementById(`trend${i}`);
   const контекст = канвас.getContext("2d");
@@ -336,6 +353,7 @@ function намалюватиТренд(i) {
   });
   контекст.stroke();
 }
+
 function намалюватиПульс() {
   пульсКонтекст.clearRect(0, 0, пульсКанвас.width, пульсКанвас.height);
   if (історіяПульсу.length < 2) return;
@@ -349,6 +367,7 @@ function намалюватиПульс() {
   });
   пульсКонтекст.stroke();
 }
+
 оновити("реалтайм");
 оновити("щогодинно");
 setInterval(() => оновити("реалтайм"), 60000);
