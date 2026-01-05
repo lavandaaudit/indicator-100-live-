@@ -3,56 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ібонаріум Теплокарта – Тренд & Пам'ять (100+ API)</title>
+<title>Ібонаріум Теплокарта – Тренд & Пам'ять (120+ API)</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
 body { background:#000; color:#fff; display:flex; flex-direction:column; align-items:center; min-height:100vh; padding:20px 0; }
 h1 { margin-bottom:20px; font-size:2rem; color:#cfefff; text-align:center; }
-.heatmap { 
-  display:grid; 
-  grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); 
-  gap:10px; 
-  width:95%; 
-  max-width:1400px; 
+.heatmap {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:10px;
+  width:95%;
+  max-width:1400px;
 }
-.cell { 
-  display:flex; 
-  flex-direction:column; 
-  justify-content:center; 
-  align-items:center; 
-  border-radius:14px; 
-  background:#111; 
-  font-weight:bold; 
-  font-size:0.95rem; 
-  padding:10px 6px; 
-  transition:all 0.4s ease; 
-  position:relative; 
-  cursor:pointer; 
+.cell {
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  border-radius:14px;
+  background:#111;
+  font-weight:bold;
+  font-size:0.95rem;
+  padding:10px 6px;
+  transition:all 0.4s ease;
+  position:relative;
+  cursor:pointer;
   box-shadow:0 4px 15px rgba(0,0,0,0.3);
   border:1px solid #222;
 }
-.cell:hover { 
-  transform:translateY(-4px); 
-  box-shadow:0 8px 25px rgba(0,255,221,0.15); 
+.cell:hover {
+  transform:translateY(-4px);
+  box-shadow:0 8px 25px rgba(0,255,221,0.15);
 }
-.cell.alert { 
-  animation:pulseRed 1.2s infinite; 
-  border-color:#ff0000; 
+.cell.alert {
+  animation:pulseRed 1.2s infinite;
+  border-color:#ff0000;
 }
 .cell:hover .tooltip { opacity:1; }
-.tooltip { 
-  position:absolute; 
-  bottom:100%; 
-  left:50%; 
-  transform:translateX(-50%); 
-  background:#222; 
-  padding:6px 12px; 
-  border-radius:8px; 
-  font-size:0.8rem; 
-  opacity:0; 
-  transition:opacity 0.3s; 
-  white-space:nowrap; 
-  z-index:10; 
+.tooltip {
+  position:absolute;
+  bottom:100%;
+  left:50%;
+  transform:translateX(-50%);
+  background:#222;
+  padding:6px 12px;
+  border-radius:8px;
+  font-size:0.8rem;
+  opacity:0;
+  transition:opacity 0.3s;
+  white-space:nowrap;
+  z-index:10;
   box-shadow:0 4px 15px rgba(0,0,0,0.5);
   pointer-events:none;
 }
@@ -61,52 +61,51 @@ h1 { margin-bottom:20px; font-size:2rem; color:#cfefff; text-align:center; }
   50%{box-shadow:0 0 25px #ff0000;}
   100%{box-shadow:0 0 8px #ff0000;}
 }
-.center-index { 
-  grid-column:1/-1; 
-  font-size:1.6rem; 
-  border:3px solid #00ffdd; 
-  border-radius:18px; 
-  padding:16px; 
-  text-align:center; 
-  margin-top:14px; 
+.center-index {
+  grid-column:1/-1;
+  font-size:1.6rem;
+  border:3px solid #00ffdd;
+  border-radius:18px;
+  padding:16px;
+  text-align:center;
+  margin-top:14px;
   animation:glow 2.5s infinite alternate;
   background:#111;
   box-shadow:0 6px 20px rgba(0,255,221,0.2);
 }
-@keyframes glow { 
-  from{box-shadow:0 0 10px #00ffdd;} 
-  to{box-shadow:0 0 30px #00ffdd;} 
+@keyframes glow {
+  from{box-shadow:0 0 10px #00ffdd;}
+  to{box-shadow:0 0 30px #00ffdd;}
 }
-#pulseCanvas { 
-  margin-top:24px; 
-  background:linear-gradient(#111,#0a0a0a); 
-  border-radius:14px; 
-  width:90%; 
-  max-width:1400px; 
-  height:200px; 
+#pulseCanvas {
+  margin-top:24px;
+  background:linear-gradient(#111,#0a0a0a);
+  border-radius:14px;
+  width:90%;
+  max-width:1400px;
+  height:200px;
   box-shadow:0 6px 20px rgba(0,0,0,0.4);
 }
-.trendCanvas { 
-  width:100%; 
-  height:80px; 
-  margin-top:8px; 
-  background:#0f0f0f; 
-  border-radius:6px; 
+.trendCanvas {
+  width:100%;
+  height:80px;
+  margin-top:8px;
+  background:#0f0f0f;
+  border-radius:6px;
 }
-@media (max-width:600px) { 
-  .cell { font-size:0.85rem; padding:8px 4px; } 
-  .trendCanvas { height:65px; } 
+@media (max-width:600px) {
+  .cell { font-size:0.85rem; padding:8px 4px; }
+  .trendCanvas { height:65px; }
   .center-index { font-size:1.4rem; }
 }
 </style>
 </head>
 <body>
-<h1>Ібонаріум Теплокарта – Тренд & Пам'ять (100+ API)</h1>
+<h1>Ібонаріум Теплокарта – Тренд & Пам'ять (120+ API)</h1>
 <div class="heatmap" id="heatmap"></div>
 <canvas id="pulseCanvas"></canvas>
-
 <script>
-// ===== Індекси: 100+ вільних API (розширено до 100+) =====
+// ===== Індекси: 120+ вільних API =====
 const індекси = [
   {назва:"BTC/USD", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd", витягти: d => d.bitcoin.usd, мін:0, макс:100000, одиниця:'$'},
   {назва:"ETH/USD", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd", витягти: d => d.ethereum.usd, мін:0, макс:10000, одиниця:'$'},
@@ -156,7 +155,7 @@ const індекси = [
   {назва:"Жарт", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Any?safe-mode", витягти: d => d.setup ? d.setup.length + d.delivery.length : d.joke.length, мін:0, макс:500, одиниця:' символів'},
   {назва:"Випадкові люди", тип:"реалтайм", api:"https://randomuser.me/api/?results=10", витягти: d => d.results.length, мін:0, макс:10, одиниця:' профілів'},
   {назва:"Покемони", тип:"щогодинно", api:"https://pokeapi.co/api/v2/pokemon?limit=100", витягти: d => d.results.length, мін:0, макс:100, одиниця:' видів'},
-  {назва:"Цитата", тип:"щогодинно", api:"https://api.quotable.io/random", витягти: d => d.length, мін:0, макс:300, одиниця:' символів'},
+  {назва:"Цитата", тип:"щогодинно", api:"https://api.quotable.io/random", витягти: d => d.content.length, мін:0, макс:300, одиниця:' символів'},
   {назва:"Жарт Чак Норріс", тип:"щогодинно", api:"https://api.chucknorris.io/jokes/random", витягти: d => d.value.length, мін:0, макс:300, одиниця:' символів'},
   {назва:"Так/Ні", тип:"реалтайм", api:"https://yesno.wtf/api", витягти: d => d.answer === 'yes' ? 100 : 0, мін:0, макс:100, одиниця:'% так'},
   {назва:"Порада", тип:"щогодинно", api:"https://api.adviceslip.com/advice", витягти: d => JSON.parse(d).slip.advice.length, мін:0, макс:200, одиниця:' символів'},
@@ -178,7 +177,6 @@ const індекси = [
   {назва:"Смерті COVID глобально", тип:"щогодинно", api:"https://disease.sh/v3/covid-19/all", витягти: d => d.deaths || 0, мін:0, макс:10000000, одиниця:' смертей'},
   {назва:"Одужання COVID глобально", тип:"щогодинно", api:"https://disease.sh/v3/covid-19/all", витягти: d => d.recovered || 0, мін:0, макс:1000000000, одиниця:' одужань'},
   {назва:"Активні випадки COVID", тип:"щогодинно", api:"https://disease.sh/v3/covid-19/all", витягти: d => d.active || 0, мін:0, макс:50000000, одиниця:' активних'},
-  // ===== Додаткові 40+ індекси для досягнення 100+ =====
   {назва:"Темп. Нью-Йорк", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.01&current_weather=true", витягти: d => d.current_weather.temperature, мін:-20, макс:40, одиниця:'°C'},
   {назва:"Темп. Токіо", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917&current_weather=true", витягти: d => d.current_weather.temperature, мін:-10, макс:40, одиниця:'°C'},
   {назва:"Темп. Москва", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=55.7558&longitude=37.6173&current_weather=true", витягти: d => d.current_weather.temperature, мін:-30, макс:35, одиниця:'°C'},
@@ -194,20 +192,38 @@ const індекси = [
   {назва:"Рандом користувач вік", тип:"реалтайм", api:"https://randomuser.me/api/", витягти: d => d.results[0].dob.age, мін:0, макс:100, одиниця:' років'},
   {назва:"Біблійний вірш", тип:"щогодинно", api:"https://labs.bible.org/api/?passage=random&type=json", витягти: d => d[0].text.length, мін:0, макс:300, одиниця:' симв.'},
   {назва:"Зоряні війни персонаж", тип:"щогодинно", api:"https://swapi.dev/api/people/1/", витягти: d => d.height, мін:0, макс:300, одиниця:' см'},
-  {назва:"Факт про їжу", тип:"щогодинно", api:"https://www.themealdb.com/api/json/v1/1/random.php", витягти: d => d.meals[0].strIngredient1 ? 1 : 0, мін:0, макс:20, одиниця:' інгр.'},
+  {назва:"Факт про їжу", тип:"щогодинно", api:"https://www.themealdb.com/api/json/v1/1/random.php", витягти: d => Object.keys(d.meals[0]).filter(k => k.startsWith('strIngredient') && d.meals[0][k]).length, мін:0, макс:20, одиниця:' інгр.'},
   {назва:"Країни ЄС", тип:"щогодинно", api:"https://restcountries.com/v3.1/region/europe", витягти: d => d.length, мін:0, макс:50, одиниця:' країн'},
   {назва:"NASA Фото дня", тип:"щогодинно", api:"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY", витягти: d => d.title.length, мін:0, макс:100, одиниця:' симв.'},
   {назва:"Глобальний AQI", тип:"реалтайм", api:"https://api.waqi.info/feed/here/?token=demo", витягти: d => d.data.aqi || 0, мін:0, макс:500, одиниця:' AQI'},
   {назва:"Крипто ринки", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd", витягти: d => d.length, мін:0, макс:100, одиниця:' монет'},
-  // Додано ще більше для 100+ (всього тепер понад 100)
   {назва:"Темп. Париж", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=48.8566&longitude=2.3522&current_weather=true", витягти: d => d.current_weather.temperature, мін:-10, макс:40, одиниця:'°C'},
   {назва:"Темп. Рио", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-22.9068&longitude=-43.1729&current_weather=true", витягти: d => d.current_weather.temperature, мін:10, макс:40, одиниця:'°C'},
   {назва:"Рандом мем", тип:"щогодинно", api:"https://meme-api.com/gimme", витягти: d => d.ups || 0, мін:0, макс:10000, одиниця:' упсів'},
   {назва:"Факт про тварин", тип:"щогодинно", api:"https://catfact.ninja/fact", витягти: d => d.fact.includes('dog') ? 100 : 0, мін:0, макс:100, одиниця:'% собака'},
   {назва:"Кількість зірок repo", тип:"реалтайм", api:"https://api.github.com/repos/public-apis/public-apis", витягти: d => d.stargazers_count, мін:0, макс:50000, одиниця:' зірок'},
-  // ... (загалом 100+ елементів у масиві)
+  // ===== Додані нові 20 індексів (загалом 120+) =====
+  {назва:"Темп. Сідней", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-33.8688&longitude=151.2093&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:45, одиниця:'°C'},
+  {назва:"Темп. Дубай", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current_weather=true", витягти: d => d.current_weather.temperature, мін:10, макс:50, одиниця:'°C'},
+  {назва:"Темп. Каїр", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=30.0444&longitude=31.2357&current_weather=true", витягти: d => d.current_weather.temperature, мін:5, макс:45, одиниця:'°C'},
+  {назва:"Котики фото", тип:"реалтайм", api:"https://api.thecatapi.com/v1/images/search?limit=5", витягти: d => d.length, мін:0, макс:10, одиниця:' фото'},
+  {назва:"Рандом факт", тип:"щогодинно", api:"https://uselessfacts.jsph.pl/random.json?language=en", витягти: d => d.text.length, мін:0, макс:300, одиниця:' симв.'},
+  {назва:"Жарт про котів", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Misc?containing=cat", витягти: d => d.joke ? d.joke.length : 0, мін:0, макс:400, одиниця:' симв.'},
+  {назва:"Курс EUR/USD", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.EUR ? (1 / d.rates.EUR) : 1, мін:0.8, макс:1.2, одиниця:' EUR'},
+  {назва:"Курс USD/UAH", тип:"реалтайм", api:"https://api.exchangerate.host/latest?base=USD", витягти: d => d.rates.UAH || 40, мін:30, макс:50, одиниця:' UAH'},
+  {назва:"Bitcoin домінація", тип:"реалтайм", api:"https://api.coingecko.com/api/v3/global", витягти: d => d.data.market_cap_percentage.btc, мін:30, макс:70, одиниця:'%'},
+  {назва:"Кількість фільмів", тип:"щогодинно", api:"https://api.themoviedb.org/3/discover/movie?api_key=<<YOUR_KEY>>&language=en-US", витягти: d => d.total_results || 0, мін:0, макс:1000000, одиниця:' фільмів'}, // Замініть <<YOUR_KEY>> на реальний ключ або видаліть, якщо немає
+  {назва:"Рандом анекдот UA", тип:"щогодинно", api:"https://api.chucknorris.io/jokes/random", витягти: d => d.value.length, мін:0, макс:300, одиниця:' симв.'}, // Як placeholder
+  {назва:"Кількість репозиторіїв GitHub", тип:"щогодинно", api:"https://api.github.com/search/repositories?q=stars:>1", витягти: d => d.total_count, мін:0, макс:100000000, одиниця:' реп.'},
+  {назва:"Темп. Антарктида", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=-90&longitude=0&current_weather=true", витягти: d => d.current_weather.temperature, мін:-80, макс:0, одиниця:'°C'},
+  {назва:"Вологість Київ", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.523&hourly=relativehumidity_2m", витягти: d => d.hourly.relativehumidity_2m[0], мін:0, макс:100, одиниця:'%'},
+  {назва:"Швидкість вітру Лондон", тип:"реалтайм", api:"https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current_weather=true", витягти: d => d.current_weather.windspeed, мін:0, макс:100, одиниця:' км/г'},
+  {назва:"Рандом число 1-100", тип:"реалтайм", api:"https://www.random.org/integers/?num=1&min=1&max=100&col=1&base=10&format=plain", витягти: d => parseInt(d), мін:1, макс:100, одиниця:' №'},
+  {назва:"Кількість користувачів Reddit", тип:"щогодинно", api:"https://www.reddit.com/about.json", витягти: d => d.data.accounts_active, мін:0, макс:1000000, одиниця:' активних'},
+  {назва:"Фото космосу", тип:"щогодинно", api:"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY", витягти: d => d.media_type === 'image' ? 100 : 0, мін:0, макс:100, одиниця:'% фото'},
+  {назва:"Погода хмарність Київ", тип:"реалтайм", api:"http://www.7timer.info/bin/api.pl?lon=30.52&lat=50.45&product=astro&output=json", витягти: d => d.dataseries[0].cloudcover, мін:0, макс:9, одиниця:' октантів'},
+  {назва:"Жарт про собак", тип:"щогодинно", api:"https://v2.jokeapi.dev/joke/Misc?containing=dog", витягти: d => d.joke ? d.joke.length : 0, мін:0, макс:400, одиниця:' симв.'}
 ];
-
 // ===== Решта коду без змін =====
 const теплокарта = document.getElementById("heatmap");
 const пульсКанвас = document.getElementById("pulseCanvas");
@@ -216,7 +232,6 @@ let попередніНорм = Array(індекси.length).fill(50);
 let попередніДельти = Array(індекси.length).fill(0);
 let історіяПульсу = [];
 let історіяТрендів = індекси.map(()=>[]);
-
 індекси.forEach((інд, i)=>{
   const клітинка = document.createElement("div");
   клітинка.className = "cell";
@@ -224,18 +239,16 @@ let історіяТрендів = індекси.map(()=>[]);
   клітинка.innerHTML = `${інд.назва}<div class="value">— ${інд.одиниця||''}</div><div class="tooltip"></div><canvas class="trendCanvas" id="trend${i}"></canvas>`;
   теплокарта.appendChild(клітинка);
 });
-
 const центр = document.createElement("div");
 центр.className = "center-index";
 центр.id = "center";
 центр.textContent = "Стан системи: —";
 теплокарта.appendChild(центр);
-
 function адаптуватиКанваси() {
   const трендКанваси = document.querySelectorAll('.trendCanvas');
-  трендКанваси.forEach(к => { 
-    к.width = к.parentElement.clientWidth - 12; 
-    к.height = 80; 
+  трендКанваси.forEach(к => {
+    к.width = к.parentElement.clientWidth - 12;
+    к.height = 80;
   });
   пульсКанвас.width = пульсКанвас.parentElement.clientWidth - 40;
   пульсКанвас.height = 200;
@@ -244,10 +257,9 @@ function адаптуватиКанваси() {
 }
 window.addEventListener('resize', адаптуватиКанваси);
 setTimeout(адаптуватиКанваси, 100);
-
 async function отриматиЗначення(інд) {
   try {
-    const відповідь = await fetch(інд.api);
+    const відповідь = await fetch(інд.api, {headers: {'User-Agent': 'IbariumHeatmap/1.0'}}); // Додано User-Agent для деяких API
     if (!відповідь.ok) throw new Error(відповідь.status);
     const дані = await відповідь.json();
     return інд.витягти(дані);
@@ -256,25 +268,21 @@ async function отриматиЗначення(інд) {
     return null;
   }
 }
-
 function нормалізувати(знач, мін, макс) {
   if (знач === null) return null;
   return Math.max(0, Math.min(100, ((знач - мін) / (макс - мін)) * 100));
 }
-
 function отриматиКолір(норм) {
   if (норм < 30) return {фон:"#ff0000", тривога:true};
   if (норм < 70) return {фон:"#ffaa00", тривога:false};
   return {фон:"#00ff00", тривога:false};
 }
-
 async function оновити(тип) {
   const обіцянки = індекси.filter(інд => інд.тип === тип).map(отриматиЗначення);
   const сиріЗначення = await Promise.all(обіцянки);
   let загальнаНорм = 0;
   let кількістьВалідних = 0;
   let індекс = 0;
-
   індекси.forEach((інд, i) => {
     if (інд.тип === тип) {
       const сире = сиріЗначення[індекс++];
@@ -302,12 +310,10 @@ async function оновити(тип) {
       кількістьВалідних++;
     }
   });
-
   const середняНорм = кількістьВалідних > 0 ? загальнаНорм / кількістьВалідних : 50;
   історіяПульсу.push(середняНорм);
   if (історіяПульсу.length > 300) історіяПульсу.shift();
   намалюватиПульс();
-
   let статус = "Норма";
   let колірСтатусу = "#ffaa00";
   if (середняНорм < 30) { статус = "Погано"; колірСтатусу = "#ff0000"; }
@@ -315,7 +321,6 @@ async function оновити(тип) {
   центр.textContent = `Стан системи: ${статус} (${середняНорм.toFixed(1)}%)`;
   центр.style.borderColor = колірСтатусу;
 }
-
 function намалюватиТренд(i) {
   const канвас = document.getElementById(`trend${i}`);
   const контекст = канвас.getContext("2d");
@@ -331,7 +336,6 @@ function намалюватиТренд(i) {
   });
   контекст.stroke();
 }
-
 function намалюватиПульс() {
   пульсКонтекст.clearRect(0, 0, пульсКанвас.width, пульсКанвас.height);
   if (історіяПульсу.length < 2) return;
@@ -345,7 +349,6 @@ function намалюватиПульс() {
   });
   пульсКонтекст.stroke();
 }
-
 оновити("реалтайм");
 оновити("щогодинно");
 setInterval(() => оновити("реалтайм"), 60000);
