@@ -5,15 +5,73 @@
 <title>PLANET CHAOS · SUN · COSMOS · EARTH · WATER · AIR</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  html, body { margin:0; padding:0; background:#000; height:100%; font-family:'Courier New', monospace; color:#0af; overflow:hidden; }
-  #hud { position:absolute; top:16px; left:16px; font-size:14px; opacity:0.8; letter-spacing:1px; pointer-events:none; }
-  #status { position:absolute; top:45px; left:16px; font-size:12px; opacity:0.7; color:#0f0; pointer-events:none; }
-  #data { position:absolute; top:80px; left:16px; right:16px; bottom:60px; font-size:11px; line-height:1.45; overflow-y:auto; color:#0f0; }
-  #clock { position:absolute; bottom:16px; right:16px; font-size:11px; opacity:0.5; color:#6cf; text-align:right; pointer-events:none; line-height:1.3; }
-  .category { margin-top:24px; margin-bottom:8px; font-size:13px; color:#0af; font-weight:bold; border-bottom:1px solid #0af; padding-bottom:4px; }
-  .row { white-space:pre; opacity:0.9; }
-  .label { color:#6cf; }
-  .val { color:#0f0; font-weight:bold; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+    height: 100%;
+    font-family: 'Courier New', monospace;
+    color: #0af;
+    overflow: hidden;
+  }
+  #hud {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-size: 14px;
+    opacity: 0.8;
+    letter-spacing: 1px;
+    pointer-events: none;
+  }
+  #status {
+    position: absolute;
+    top: 42px;
+    left: 16px;
+    font-size: 12px;
+    opacity: 0.7;
+    color: #0f0;
+    pointer-events: none;
+  }
+  #data {
+    position: absolute;
+    top: 70px;
+    left: 16px;
+    right: 16px;
+    bottom: 60px;
+    font-size: 11px;
+    line-height: 1.28;          /* ← зменшено міжрядковий інтервал */
+    overflow-y: auto;
+    color: #0f0;
+  }
+  #clock {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    font-size: 11px;
+    opacity: 0.5;
+    color: #6cf;
+    text-align: right;
+    pointer-events: none;
+    line-height: 1.3;
+  }
+  .category {
+    margin: 20px 0 6px 0;       /* ← трохи менше відступів зверху/знизу */
+    font-size: 13px;
+    color: #0af;
+    font-weight: bold;
+    /* прибрано border-bottom */
+  }
+  .row {
+    white-space: pre;
+    opacity: 0.9;
+  }
+  .label {
+    color: #6cf;
+  }
+  .val {
+    color: #0f0;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -26,14 +84,14 @@
 const dataDiv = document.getElementById('data');
 const statusDiv = document.getElementById('status');
 const clockDiv = document.getElementById('clock');
-
 const proxy = 'https://corsproxy.io/?';
 const startTime = Date.now();
 
 function formatRelativeTime(ms) {
   const s = Math.floor(ms / 1000);
   if (s < 60) return `+${s}s`;
-  const m = Math.floor(s / 60); const sec = s % 60;
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
   return `+${m}m ${sec}s`;
 }
 
@@ -41,7 +99,9 @@ function updateClock() {
   const now = new Date();
   clockDiv.innerHTML = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}<br>${formatRelativeTime(Date.now() - startTime)}`;
 }
-setInterval(updateClock, 1000); updateClock();
+
+setInterval(updateClock, 1000);
+updateClock();
 
 async function fetchWithProxy(url) {
   try {
@@ -63,11 +123,11 @@ async function fetchAllData() {
   const om = await fetchWithProxy('https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.52&current=shortwave_radiation,direct_radiation,diffuse_radiation,global_tilted_irradiance,uv_index');
   if (om?.current) {
     const c = om.current;
-    html += `<div class="row"><span class="label">Shortwave Radiation      </span><span class="val">${c.shortwave_radiation ?? '--'} W/m²</span></div>`;
-    html += `<div class="row"><span class="label">Direct Radiation         </span><span class="val">${c.direct_radiation ?? '--'} W/m²</span></div>`;
-    html += `<div class="row"><span class="label">Diffuse Radiation        </span><span class="val">${c.diffuse_radiation ?? '--'} W/m²</span></div>`;
+    html += `<div class="row"><span class="label">Shortwave Radiation </span><span class="val">${c.shortwave_radiation ?? '--'} W/m²</span></div>`;
+    html += `<div class="row"><span class="label">Direct Radiation </span><span class="val">${c.direct_radiation ?? '--'} W/m²</span></div>`;
+    html += `<div class="row"><span class="label">Diffuse Radiation </span><span class="val">${c.diffuse_radiation ?? '--'} W/m²</span></div>`;
     html += `<div class="row"><span class="label">Global Tilted Irradiance </span><span class="val">${c.global_tilted_irradiance ?? '--'} W/m²</span></div>`;
-    html += `<div class="row"><span class="label">UV Index                 </span><span class="val">${c.uv_index ?? '--'}</span></div>`;
+    html += `<div class="row"><span class="label">UV Index </span><span class="val">${c.uv_index ?? '--'}</span></div>`;
     loaded += 5;
   }
 
@@ -76,25 +136,25 @@ async function fetchAllData() {
   const plasma = await fetchWithProxy('https://services.swpc.noaa.gov/products/solar-wind/plasma-7-day.json');
   if (plasma?.length > 1) {
     const last = plasma[plasma.length - 1];
-    html += `<div class="row"><span class="label">Solar Wind Speed         </span><span class="val">${parseFloat(last[3])?.toFixed(0) ?? '--'} km/s</span></div>`;
-    html += `<div class="row"><span class="label">Solar Wind Density       </span><span class="val">${parseFloat(last[6])?.toFixed(1) ?? '--'} /cm³</span></div>`;
-    html += `<div class="row"><span class="label">Solar Wind Temp          </span><span class="val">${parseFloat(last[7])?.toFixed(0) ?? '--'} K</span></div>`;
+    html += `<div class="row"><span class="label">Solar Wind Speed </span><span class="val">${parseFloat(last[3])?.toFixed(0) ?? '--'} km/s</span></div>`;
+    html += `<div class="row"><span class="label">Solar Wind Density </span><span class="val">${parseFloat(last[6])?.toFixed(1) ?? '--'} /cm³</span></div>`;
+    html += `<div class="row"><span class="label">Solar Wind Temp </span><span class="val">${parseFloat(last[7])?.toFixed(0) ?? '--'} K</span></div>`;
     loaded += 3;
   }
 
   const kp = await fetchWithProxy('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
   if (kp?.length) {
     const lastKp = kp[kp.length - 1];
-    html += `<div class="row"><span class="label">Kp-index                 </span><span class="val">${lastKp[1] ?? '--'}</span></div>`;
+    html += `<div class="row"><span class="label">Kp-index </span><span class="val">${lastKp[1] ?? '--'}</span></div>`;
     loaded++;
   }
 
   const today = new Date().toISOString().slice(0,10);
   const donki = await fetchWithProxy(`https://api.nasa.gov/DONKI/CME?startDate=${today}&endDate=${today}&api_key=DEMO_KEY`);
   if (Array.isArray(donki)) {
-    html += `<div class="row"><span class="label">CME today count          </span><span class="val">${donki.length}</span></div>`;
+    html += `<div class="row"><span class="label">CME today count </span><span class="val">${donki.length}</span></div>`;
     if (donki.length > 0 && donki[0]?.cmeAnalyses?.[0]?.speed) {
-      html += `<div class="row"><span class="label">Latest CME speed         </span><span class="val">${donki[0].cmeAnalyses[0].speed} km/s</span></div>`;
+      html += `<div class="row"><span class="label">Latest CME speed </span><span class="val">${donki[0].cmeAnalyses[0].speed} km/s</span></div>`;
     }
     loaded += 2;
   }
@@ -102,7 +162,7 @@ async function fetchAllData() {
   const xray = await fetchWithProxy('https://services.swpc.noaa.gov/json/goes/primary/xray-flares-latest.json');
   if (xray?.length > 0) {
     const latest = xray[0];
-    html += `<div class="row"><span class="label">GOES X-ray Flux          </span><span class="val">${latest.flux ?? '--'} W/m² (${latest.class_type ?? '--'})</span></div>`;
+    html += `<div class="row"><span class="label">GOES X-ray Flux </span><span class="val">${latest.flux ?? '--'} W/m² (${latest.class_type ?? '--'})</span></div>`;
     loaded++;
   }
 
@@ -111,13 +171,13 @@ async function fetchAllData() {
   const forecast = await fetchWithProxy('https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.52&current=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,pressure_msl,surface_pressure,cloud_cover,wind_speed_10m,wind_gusts_10m,vapour_pressure_deficit,visibility,soil_temperature_0cm,soil_moisture_0_to_1cm,cape');
   if (forecast?.current) {
     const c = forecast.current;
-    html += `<div class="row"><span class="label">Температура 2 м          </span><span class="val">${c.temperature_2m ?? '--'} °C</span></div>`;
-    html += `<div class="row"><span class="label">Вологість                </span><span class="val">${c.relative_humidity_2m ?? '--'} %</span></div>`;
-    html += `<div class="row"><span class="label">Тиск MSL                 </span><span class="val">${c.pressure_msl ?? '--'} hPa</span></div>`;
-    html += `<div class="row"><span class="label">Хмарність                </span><span class="val">${c.cloud_cover ?? '--'} %</span></div>`;
-    html += `<div class="row"><span class="label">Вітер 10 м               </span><span class="val">${c.wind_speed_10m ?? '--'} км/год</span></div>`;
-    html += `<div class="row"><span class="label">Видимість                </span><span class="val">${(c.visibility / 1000 ?? '--').toFixed(1)} км</span></div>`;
-    html += `<div class="row"><span class="label">Темп. ґрунту 0 см        </span><span class="val">${c.soil_temperature_0cm ?? '--'} °C</span></div>`;
+    html += `<div class="row"><span class="label">Температура 2 м </span><span class="val">${c.temperature_2m ?? '--'} °C</span></div>`;
+    html += `<div class="row"><span class="label">Вологість </span><span class="val">${c.relative_humidity_2m ?? '--'} %</span></div>`;
+    html += `<div class="row"><span class="label">Тиск MSL </span><span class="val">${c.pressure_msl ?? '--'} hPa</span></div>`;
+    html += `<div class="row"><span class="label">Хмарність </span><span class="val">${c.cloud_cover ?? '--'} %</span></div>`;
+    html += `<div class="row"><span class="label">Вітер 10 м </span><span class="val">${c.wind_speed_10m ?? '--'} км/год</span></div>`;
+    html += `<div class="row"><span class="label">Видимість </span><span class="val">${(c.visibility / 1000 ?? '--').toFixed(1)} км</span></div>`;
+    html += `<div class="row"><span class="label">Темп. ґрунту 0 см </span><span class="val">${c.soil_temperature_0cm ?? '--'} °C</span></div>`;
     loaded += 7;
   }
 
@@ -126,10 +186,10 @@ async function fetchAllData() {
   const marine = await fetchWithProxy('https://marine-api.open-meteo.com/v1/marine?latitude=44.0&longitude=30.0&current=wave_height,wave_direction,wave_period,sea_surface_temperature');
   if (marine?.current) {
     const m = marine.current;
-    html += `<div class="row"><span class="label">Висота хвилі             </span><span class="val">${m.wave_height ?? '--'} м</span></div>`;
-    html += `<div class="row"><span class="label">Напрям хвилі             </span><span class="val">${m.wave_direction ?? '--'} °</span></div>`;
-    html += `<div class="row"><span class="label">Період хвилі             </span><span class="val">${m.wave_period ?? '--'} с</span></div>`;
-    html += `<div class="row"><span class="label">Температура моря         </span><span class="val">${m.sea_surface_temperature ?? '--'} °C</span></div>`;
+    html += `<div class="row"><span class="label">Висота хвилі </span><span class="val">${m.wave_height ?? '--'} м</span></div>`;
+    html += `<div class="row"><span class="label">Напрям хвилі </span><span class="val">${m.wave_direction ?? '--'} °</span></div>`;
+    html += `<div class="row"><span class="label">Період хвилі </span><span class="val">${m.wave_period ?? '--'} с</span></div>`;
+    html += `<div class="row"><span class="label">Температура моря </span><span class="val">${m.sea_surface_temperature ?? '--'} °C</span></div>`;
     loaded += 4;
   }
 
@@ -138,11 +198,11 @@ async function fetchAllData() {
   const air = await fetchWithProxy('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=50.45&longitude=30.52&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi');
   if (air?.current) {
     const a = air.current;
-    html += `<div class="row"><span class="label">PM10                     </span><span class="val">${a.pm10 ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">PM2.5                    </span><span class="val">${a.pm2_5 ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">CO                       </span><span class="val">${a.carbon_monoxide ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">O₃                       </span><span class="val">${a.ozone ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">European AQI             </span><span class="val">${a.european_aqi ?? '--'}</span></div>`;
+    html += `<div class="row"><span class="label">PM10 </span><span class="val">${a.pm10 ?? '--'} µg/m³</span></div>`;
+    html += `<div class="row"><span class="label">PM2.5 </span><span class="val">${a.pm2_5 ?? '--'} µg/m³</span></div>`;
+    html += `<div class="row"><span class="label">CO </span><span class="val">${a.carbon_monoxide ?? '--'} µg/m³</span></div>`;
+    html += `<div class="row"><span class="label">O₃ </span><span class="val">${a.ozone ?? '--'} µg/m³</span></div>`;
+    html += `<div class="row"><span class="label">European AQI </span><span class="val">${a.european_aqi ?? '--'}</span></div>`;
     loaded += 5;
   }
 
