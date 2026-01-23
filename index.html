@@ -39,7 +39,7 @@
     right: 16px;
     bottom: 60px;
     font-size: 11px;
-    line-height: 1.28;          /* ← зменшено міжрядковий інтервал */
+    line-height: 1.28;
     overflow-y: auto;
     color: #0f0;
   }
@@ -55,11 +55,19 @@
     line-height: 1.3;
   }
   .category {
-    margin: 20px 0 6px 0;       /* ← трохи менше відступів зверху/знизу */
+    margin: 20px 0 6px 0;
     font-size: 13px;
     color: #0af;
     font-weight: bold;
-    /* прибрано border-bottom */
+  }
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
+  }
+  .left-column, .right-column {
+    display: flex;
+    flex-direction: column;
   }
   .row {
     white-space: pre;
@@ -115,98 +123,217 @@ async function fetchWithProxy(url) {
 
 async function fetchAllData() {
   statusDiv.innerHTML = 'оновлення даних...';
-  let html = '';
+  let leftHtml = '';
+  let rightHtml = '';
   let loaded = 0;
 
-  // ── СОНЦЕ ──
-  html += '<div class="category">СОНЦЕ</div>';
-  const om = await fetchWithProxy('https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.52&current=shortwave_radiation,direct_radiation,diffuse_radiation,global_tilted_irradiance,uv_index');
-  if (om?.current) {
-    const c = om.current;
-    html += `<div class="row"><span class="label">Shortwave Radiation </span><span class="val">${c.shortwave_radiation ?? '--'} W/m²</span></div>`;
-    html += `<div class="row"><span class="label">Direct Radiation </span><span class="val">${c.direct_radiation ?? '--'} W/m²</span></div>`;
-    html += `<div class="row"><span class="label">Diffuse Radiation </span><span class="val">${c.diffuse_radiation ?? '--'} W/m²</span></div>`;
-    html += `<div class="row"><span class="label">Global Tilted Irradiance </span><span class="val">${c.global_tilted_irradiance ?? '--'} W/m²</span></div>`;
-    html += `<div class="row"><span class="label">UV Index </span><span class="val">${c.uv_index ?? '--'}</span></div>`;
+  // ── ЛІВИЙ СТОВПЧИК ──
+
+  // ПОВІТРЯ
+  leftHtml += '<div class="category">ПОВІТРЯ</div>';
+  const air = await fetchWithProxy('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=50.45&longitude=30.52&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi');
+  if (air?.current) {
+    const a = air.current;
+    leftHtml += `<div class="row"><span class="label">PM10 </span><span class="val">${a.pm10 ?? '--'} µg/m³</span></div>`;
+    leftHtml += `<div class="row"><span class="label">PM2.5 </span><span class="val">${a.pm2_5 ?? '--'} µg/m³</span></div>`;
+    leftHtml += `<div class="row"><span class="label">CO </span><span class="val">${a.carbon_monoxide ?? '--'} µg/m³</span></div>`;
+    leftHtml += `<div class="row"><span class="label">O₃ </span><span class="val">${a.ozone ?? '--'} µg/m³</span></div>`;
+    leftHtml += `<div class="row"><span class="label">European AQI </span><span class="val">${a.european_aqi ?? '--'}</span></div>`;
     loaded += 5;
   }
 
-  // ── КОСМОС ──
-  html += '<div class="category">КОСМОС</div>';
+  // КОСМОС (розширений)
+  leftHtml += '<div class="category">КОСМОС</div>';
+
+  // Solar Wind Plasma (як раніше)
   const plasma = await fetchWithProxy('https://services.swpc.noaa.gov/products/solar-wind/plasma-7-day.json');
   if (plasma?.length > 1) {
     const last = plasma[plasma.length - 1];
-    html += `<div class="row"><span class="label">Solar Wind Speed </span><span class="val">${parseFloat(last[3])?.toFixed(0) ?? '--'} km/s</span></div>`;
-    html += `<div class="row"><span class="label">Solar Wind Density </span><span class="val">${parseFloat(last[6])?.toFixed(1) ?? '--'} /cm³</span></div>`;
-    html += `<div class="row"><span class="label">Solar Wind Temp </span><span class="val">${parseFloat(last[7])?.toFixed(0) ?? '--'} K</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Solar Wind Speed </span><span class="val">${parseFloat(last[3])?.toFixed(0) ?? '--'} km/s</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Solar Wind Density </span><span class="val">${parseFloat(last[6])?.toFixed(1) ?? '--'} /cm³</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Solar Wind Temp </span><span class="val">${parseFloat(last[7])?.toFixed(0) ?? '--'} K</span></div>`;
     loaded += 3;
   }
 
+  // Kp-index (як раніше)
   const kp = await fetchWithProxy('https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json');
   if (kp?.length) {
     const lastKp = kp[kp.length - 1];
-    html += `<div class="row"><span class="label">Kp-index </span><span class="val">${lastKp[1] ?? '--'}</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Kp-index </span><span class="val">${lastKp[1] ?? '--'}</span></div>`;
     loaded++;
   }
 
+  // CME today (як раніше)
   const today = new Date().toISOString().slice(0,10);
   const donki = await fetchWithProxy(`https://api.nasa.gov/DONKI/CME?startDate=${today}&endDate=${today}&api_key=DEMO_KEY`);
   if (Array.isArray(donki)) {
-    html += `<div class="row"><span class="label">CME today count </span><span class="val">${donki.length}</span></div>`;
+    leftHtml += `<div class="row"><span class="label">CME today count </span><span class="val">${donki.length}</span></div>`;
     if (donki.length > 0 && donki[0]?.cmeAnalyses?.[0]?.speed) {
-      html += `<div class="row"><span class="label">Latest CME speed </span><span class="val">${donki[0].cmeAnalyses[0].speed} km/s</span></div>`;
+      leftHtml += `<div class="row"><span class="label">Latest CME speed </span><span class="val">${donki[0].cmeAnalyses[0].speed} km/s</span></div>`;
     }
     loaded += 2;
   }
 
+  // GOES X-ray (як раніше)
   const xray = await fetchWithProxy('https://services.swpc.noaa.gov/json/goes/primary/xray-flares-latest.json');
   if (xray?.length > 0) {
     const latest = xray[0];
-    html += `<div class="row"><span class="label">GOES X-ray Flux </span><span class="val">${latest.flux ?? '--'} W/m² (${latest.class_type ?? '--'})</span></div>`;
+    leftHtml += `<div class="row"><span class="label">GOES X-ray Flux </span><span class="val">${latest.flux ?? '--'} W/m² (${latest.class_type ?? '--'})</span></div>`;
     loaded++;
   }
 
-  // ── ЗЕМЛЯ ──
-  html += '<div class="category">ЗЕМЛЯ</div>';
-  const forecast = await fetchWithProxy('https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.52&current=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,pressure_msl,surface_pressure,cloud_cover,wind_speed_10m,wind_gusts_10m,vapour_pressure_deficit,visibility,soil_temperature_0cm,soil_moisture_0_to_1cm,cape');
-  if (forecast?.current) {
-    const c = forecast.current;
-    html += `<div class="row"><span class="label">Температура 2 м </span><span class="val">${c.temperature_2m ?? '--'} °C</span></div>`;
-    html += `<div class="row"><span class="label">Вологість </span><span class="val">${c.relative_humidity_2m ?? '--'} %</span></div>`;
-    html += `<div class="row"><span class="label">Тиск MSL </span><span class="val">${c.pressure_msl ?? '--'} hPa</span></div>`;
-    html += `<div class="row"><span class="label">Хмарність </span><span class="val">${c.cloud_cover ?? '--'} %</span></div>`;
-    html += `<div class="row"><span class="label">Вітер 10 м </span><span class="val">${c.wind_speed_10m ?? '--'} км/год</span></div>`;
-    html += `<div class="row"><span class="label">Видимість </span><span class="val">${(c.visibility / 1000 ?? '--').toFixed(1)} км</span></div>`;
-    html += `<div class="row"><span class="label">Темп. ґрунту 0 см </span><span class="val">${c.soil_temperature_0cm ?? '--'} °C</span></div>`;
-    loaded += 7;
+  // НОВЕ: GOES Proton Flux (proton event levels)
+  const proton = await fetchWithProxy('https://services.swpc.noaa.gov/json/goes/primary/proton-flux.json');
+  if (proton?.length > 0) {
+    const lastProton = proton[proton.length - 1];
+    leftHtml += `<div class="row"><span class="label">Proton >10 MeV </span><span class="val">${lastProton['>10 MeV']?.toExponential(1) ?? '--'} p/cm²/s</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Proton >50 MeV </span><span class="val">${lastProton['>50 MeV']?.toExponential(1) ?? '--'} p/cm²/s</span></div>`;
+    loaded += 2;
   }
 
-  // ── ВОДА ──
-  html += '<div class="category">ВОДА</div>';
+  // НОВЕ: GOES Electron Flux (>2 MeV)
+  const electron = await fetchWithProxy('https://services.swpc.noaa.gov/json/goes/primary/electron-flux.json');
+  if (electron?.length > 0) {
+    const lastElectron = electron[electron.length - 1];
+    leftHtml += `<div class="row"><span class="label">Electron >2 MeV </span><span class="val">${lastElectron.flux?.toExponential(1) ?? '--'} e/cm²/s</span></div>`;
+    loaded++;
+  }
+
+  // НОВЕ: Dst Index (real-time geomagnetic)
+  const dst = await fetchWithProxy('https://services.swpc.noaa.gov/products/kyoto-dst.json');
+  if (dst?.length > 0) {
+    const lastDst = dst[dst.length - 1];
+    leftHtml += `<div class="row"><span class="label">Dst Index </span><span class="val">${lastDst[1] ?? '--'} nT</span></div>`;
+    loaded++;
+  }
+
+  // НОВЕ: F10.7 Solar Flux (остандикатор сонячної активності)
+  const f107 = await fetchWithProxy('https://services.swpc.noaa.gov/json/f107.json');
+  if (f107?.length > 0) {
+    const lastF107 = f107[f107.length - 1];
+    leftHtml += `<div class="row"><span class="label">F10.7 Flux </span><span class="val">${lastF107.flux ?? '--'} sfu</span></div>`;
+    loaded++;
+  }
+
+  // ВОДА
+  leftHtml += '<div class="category">ВОДА</div>';
   const marine = await fetchWithProxy('https://marine-api.open-meteo.com/v1/marine?latitude=44.0&longitude=30.0&current=wave_height,wave_direction,wave_period,sea_surface_temperature');
   if (marine?.current) {
     const m = marine.current;
-    html += `<div class="row"><span class="label">Висота хвилі </span><span class="val">${m.wave_height ?? '--'} м</span></div>`;
-    html += `<div class="row"><span class="label">Напрям хвилі </span><span class="val">${m.wave_direction ?? '--'} °</span></div>`;
-    html += `<div class="row"><span class="label">Період хвилі </span><span class="val">${m.wave_period ?? '--'} с</span></div>`;
-    html += `<div class="row"><span class="label">Температура моря </span><span class="val">${m.sea_surface_temperature ?? '--'} °C</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Висота хвилі </span><span class="val">${m.wave_height ?? '--'} м</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Напрям хвилі </span><span class="val">${m.wave_direction ?? '--'} °</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Період хвилі </span><span class="val">${m.wave_period ?? '--'} с</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Температура моря </span><span class="val">${m.sea_surface_temperature ?? '--'} °C</span></div>`;
     loaded += 4;
   }
 
-  // ── ПОВІТРЯ ──
-  html += '<div class="category">ПОВІТРЯ</div>';
-  const air = await fetchWithProxy('https://air-quality-api.open-meteo.com/v1/air-quality?latitude=50.45&longitude=30.52&current=pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone,european_aqi');
-  if (air?.current) {
-    const a = air.current;
-    html += `<div class="row"><span class="label">PM10 </span><span class="val">${a.pm10 ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">PM2.5 </span><span class="val">${a.pm2_5 ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">CO </span><span class="val">${a.carbon_monoxide ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">O₃ </span><span class="val">${a.ozone ?? '--'} µg/m³</span></div>`;
-    html += `<div class="row"><span class="label">European AQI </span><span class="val">${a.european_aqi ?? '--'}</span></div>`;
+  // ЕНЕРГІЯ
+  leftHtml += '<div class="category">ЕНЕРГІЯ</div>';
+  const oil = await fetchWithProxy('https://query1.finance.yahoo.com/v8/finance/chart/CL=F?range=1d&interval=1d');
+  if (oil?.chart?.result?.[0]?.meta?.regularMarketPrice) {
+    leftHtml += `<div class="row"><span class="label">WTI Oil USD </span><span class="val">${oil.chart.result[0].meta.regularMarketPrice.toFixed(2) ?? '--'}</span></div>`;
+    loaded++;
+  }
+  const gold = await fetchWithProxy('https://query1.finance.yahoo.com/v8/finance/chart/GC=F?range=1d&interval=1d');
+  if (gold?.chart?.result?.[0]?.meta?.regularMarketPrice) {
+    leftHtml += `<div class="row"><span class="label">Gold USD </span><span class="val">${gold.chart.result[0].meta.regularMarketPrice.toFixed(2) ?? '--'}</span></div>`;
+    loaded++;
+  }
+
+  // ЗЕМЛЕТРУСИ
+  leftHtml += '<div class="category">ЗЕМЛЕТРУСИ</div>';
+  const quakes = await fetchWithProxy('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson');
+  if (quakes?.features?.length > 0) {
+    const latestQuake = quakes.features[0].properties;
+    leftHtml += `<div class="row"><span class="label">Останній магнітуд </span><span class="val">${latestQuake.mag?.toFixed(1) ?? '--'}</span></div>`;
+    leftHtml += `<div class="row"><span class="label">Місце </span><span class="val">${latestQuake.place ?? '--'}</span></div>`;
+    loaded += 2;
+  }
+
+  // ── ПРАВИЙ СТОВПЧИК ── (без змін, як у попередній версії)
+  // СОНЦЕ
+  rightHtml += '<div class="category">СОНЦЕ</div>';
+  const om = await fetchWithProxy('https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.52&current=shortwave_radiation,direct_radiation,diffuse_radiation,global_tilted_irradiance,uv_index');
+  if (om?.current) {
+    const c = om.current;
+    rightHtml += `<div class="row"><span class="label">Shortwave Radiation </span><span class="val">${c.shortwave_radiation ?? '--'} W/m²</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Direct Radiation </span><span class="val">${c.direct_radiation ?? '--'} W/m²</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Diffuse Radiation </span><span class="val">${c.diffuse_radiation ?? '--'} W/m²</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Global Tilted Irradiance </span><span class="val">${c.global_tilted_irradiance ?? '--'} W/m²</span></div>`;
+    rightHtml += `<div class="row"><span class="label">UV Index </span><span class="val">${c.uv_index ?? '--'}</span></div>`;
     loaded += 5;
   }
 
-  dataDiv.innerHTML = html || 'немає даних на цей момент';
+  // ЗЕМЛЯ
+  rightHtml += '<div class="category">ЗЕМЛЯ</div>';
+  const forecast = await fetchWithProxy('https://api.open-meteo.com/v1/forecast?latitude=50.45&longitude=30.52&current=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,pressure_msl,surface_pressure,cloud_cover,wind_speed_10m,wind_gusts_10m,vapour_pressure_deficit,visibility,soil_temperature_0cm,soil_moisture_0_to_1cm,cape');
+  if (forecast?.current) {
+    const c = forecast.current;
+    rightHtml += `<div class="row"><span class="label">Температура 2 м </span><span class="val">${c.temperature_2m ?? '--'} °C</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Вологість </span><span class="val">${c.relative_humidity_2m ?? '--'} %</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Тиск MSL </span><span class="val">${c.pressure_msl ?? '--'} hPa</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Хмарність </span><span class="val">${c.cloud_cover ?? '--'} %</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Вітер 10 м </span><span class="val">${c.wind_speed_10m ?? '--'} км/год</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Видимість </span><span class="val">${(c.visibility / 1000 ?? '--').toFixed(1)} км</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Темп. ґрунту 0 см </span><span class="val">${c.soil_temperature_0cm ?? '--'} °C</span></div>`;
+    loaded += 7;
+  }
+
+  // ФІНАНСИ
+  rightHtml += '<div class="category">ФІНАНСИ</div>';
+  const crypto = await fetchWithProxy('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+  if (crypto) {
+    rightHtml += `<div class="row"><span class="label">Bitcoin USD </span><span class="val">${crypto.bitcoin?.usd ?? '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">Ethereum USD </span><span class="val">${crypto.ethereum?.usd ?? '--'}</span></div>`;
+    loaded += 2;
+  }
+  const sp500 = await fetchWithProxy('https://query1.finance.yahoo.com/v8/finance/chart/^GSPC?range=1d&interval=1d');
+  if (sp500?.chart?.result?.[0]?.meta?.regularMarketPrice) {
+    rightHtml += `<div class="row"><span class="label">S&P 500 </span><span class="val">${sp500.chart.result[0].meta.regularMarketPrice.toFixed(2) ?? '--'}</span></div>`;
+    loaded++;
+  }
+  const dow = await fetchWithProxy('https://query1.finance.yahoo.com/v8/finance/chart/^DJI?range=1d&interval=1d');
+  if (dow?.chart?.result?.[0]?.meta?.regularMarketPrice) {
+    rightHtml += `<div class="row"><span class="label">Dow Jones </span><span class="val">${dow.chart.result[0].meta.regularMarketPrice.toFixed(2) ?? '--'}</span></div>`;
+    loaded++;
+  }
+  const nasdaq = await fetchWithProxy('https://query1.finance.yahoo.com/v8/finance/chart/^IXIC?range=1d&interval=1d');
+  if (nasdaq?.chart?.result?.[0]?.meta?.regularMarketPrice) {
+    rightHtml += `<div class="row"><span class="label">NASDAQ </span><span class="val">${nasdaq.chart.result[0].meta.regularMarketPrice.toFixed(2) ?? '--'}</span></div>`;
+    loaded++;
+  }
+
+  // ВАЛЮТИ
+  rightHtml += '<div class="category">ВАЛЮТИ</div><div class="grid">';
+  const cbRates = await fetchWithProxy('https://api.coinbase.com/v2/exchange-rates?currency=USD');
+  if (cbRates?.data?.rates) {
+    const rates = cbRates.data.rates;
+    rightHtml += `<div class="row"><span class="label">USD → EUR  </span><span class="val">${rates.EUR ? (1 / parseFloat(rates.EUR)).toFixed(4) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → UAH  </span><span class="val">${rates.UAH ? (1 / parseFloat(rates.UAH)).toFixed(2) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → GBP  </span><span class="val">${rates.GBP ? (1 / parseFloat(rates.GBP)).toFixed(4) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → PLN  </span><span class="val">${rates.PLN ? (1 / parseFloat(rates.PLN)).toFixed(3) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → CAD  </span><span class="val">${rates.CAD ? (1 / parseFloat(rates.CAD)).toFixed(4) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → CHF  </span><span class="val">${rates.CHF ? (1 / parseFloat(rates.CHF)).toFixed(4) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → JPY  </span><span class="val">${rates.JPY ? (1 / parseFloat(rates.JPY)).toFixed(2) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → AUD  </span><span class="val">${rates.AUD ? (1 / parseFloat(rates.AUD)).toFixed(4) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → NZD  </span><span class="val">${rates.NZD ? (1 / parseFloat(rates.NZD)).toFixed(4) : '--'}</span></div>`;
+    rightHtml += `<div class="row"><span class="label">USD → SEK  </span><span class="val">${rates.SEK ? (1 / parseFloat(rates.SEK)).toFixed(3) : '--'}</span></div>`;
+    loaded += 10;
+  } else {
+    for (let i = 0; i < 10; i++) {
+      rightHtml += `<div class="row"><span class="label">-- </span><span class="val">--</span></div>`;
+    }
+  }
+  rightHtml += '</div>';
+
+  // Збираємо все в головну сітку
+  dataDiv.innerHTML = `
+    <div class="main-grid">
+      <div class="left-column">${leftHtml || '<div>немає даних</div>'}</div>
+      <div class="right-column">${rightHtml || '<div>немає даних</div>'}</div>
+    </div>
+  `;
+
   statusDiv.innerHTML = `оновлено (${loaded} джерел) • ${new Date().toLocaleTimeString()}`;
 }
 
